@@ -2,11 +2,8 @@
 
 .section .data
 input:          .skip   100
-input_l:        .long   0
-
 name:           .skip   100
 file:           .skip   255
-file_l:         .long   0
 
 search_msg:     .string "Enter the search term:\n"
 file_msg:       .string "Enter the filename:\n"
@@ -17,13 +14,13 @@ found_msg:      .string "File contains the search term.\n"
 _start:
     # prompt for the grep string
     mov $1,             %rax
-    mov $0,             %rdi
+    xor %rdi,           %rdi
     mov $search_msg,    %rsi
     mov $23,            %rdx
     syscall
 
     # read the grep string
-    mov $0,             %rax
+    xor %rax,           %rax
     mov $1,             %rdi
     mov $input,         %rsi
     mov $100,           %rdx
@@ -33,17 +30,17 @@ _start:
     mov $input,         %rdi
     dec                 %rax
     movb $0,            (%rdi, %rax)
-    mov %rax,           input_l
+    mov %rax,           %r10 # store the actual input length on r10
 
     # prompt for the filename
     mov $1,             %rax
-    mov $0,             %rdi
+    xor %rdi,           %rdi
     mov $file_msg,      %rsi
     mov $21,            %rdx
     syscall
 
     # read filename
-    mov $0,             %rax
+    xor %rax,           %rax
     mov $1,             %rdi
     mov $name,          %rsi
     mov $100,           %rdx
@@ -57,34 +54,33 @@ _start:
     # open file
     mov $2,             %rax
     mov $name,          %rdi
-    mov $0,             %rsi
+    xor %rsi,           %rsi
     syscall
 
     # read file into buffer
     mov %rax,           %rdi
-    mov $0,             %rax
+    xor %rax,           %rax
     mov $file,          %rsi
     mov $255,           %rdx
     syscall
 
     dec                 %rax
-    mov %rax,           file_l(%rip) # store the actual file length
+    mov %rax,           %r11 # store the actual file length on r11
 
     # we start using 32 bits registers as we are performing 32 bits operations
     mov $file,          %edi
     mov $input,         %ebp
     xor %ebx,           %ebx # this indexes are just counters
-    xor %esi,           %esi
+    xor %rsi,           %rsi
 compare_char:
-    cmp %esi,           input_l(%rip) # if we got to the end of input
+    cmp %rsi,           %r10 # if we got to the end of input
     je                  found
 
-    cmp %rbx,           file_l(%rip) # we check if we reached EOF
+    cmp %rbx,           %r11 # we check if we reached EOF
     je                  not_found
 
     movb (%edi, %ebx),  %al # we get one byte from the strings (1 char)
-    movb (%ebp, %esi),  %dl
-    cmp %dl,            %al # compare if it is the same
+    cmpb %al,           (%ebp, %esi) # compare if it is the same
     jne                 no_match
 
     inc                 %ebx
@@ -99,25 +95,21 @@ reset_counter:
     mov $0,             %esi # reset esi to start looking for the first char
     jmp                 compare_char
 
-
 found:
     mov $1,             %rax
-    mov $0,             %rdi
+    xor %rdi,           %rdi
     mov $found_msg,     %rsi
     mov $31,            %rdx
     syscall
     jmp                 exit
 not_found:
     mov $1,             %rax
-    mov $0,             %rdi
+    xor %rdi,           %rdi
     mov $not_found_msg, %rsi
     mov $39,            %rdx
     syscall
-    jmp                 exit
-
-
 exit:
     # we exit happy :)
     mov $60,            %rax
-    mov $0,             %rdi
+    xor %rdi,           %rdi
     syscall

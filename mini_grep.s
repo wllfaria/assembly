@@ -13,58 +13,58 @@ found_msg:      .string "File contains the search term.\n"
 .section .text
 _start:
     # prompt for the grep string
-    mov $1,             %rax
-    xor %rdi,           %rdi
-    mov $search_msg,    %rsi
-    mov $23,            %rdx
+    mov $1,             %eax
+    xor %edi,           %edi
+    mov $search_msg,    %esi
+    mov $23,            %edx
     syscall
 
     # read the grep string
-    xor %rax,           %rax
-    mov $1,             %rdi
-    mov $input,         %rsi
-    mov $100,           %rdx
+    xor %eax,           %eax
+    mov $1,             %edi
+    mov $input,         %esi
+    mov $100,           %edx
     syscall 
     lea -1(%rax),       %r10 # we store the actual input length on r10
     # this is a compile hack, essentially we are subtracting 1 from rax
 
     # prompt for the filename
-    mov $1,             %rax
-    xor %rdi,           %rdi
-    mov $file_msg,      %rsi
-    mov $21,            %rdx
+    mov $1,             %eax
+    xor %edi,           %edi
+    mov $file_msg,      %esi
+    mov $21,            %edx
     syscall
 
     # read filename
-    xor %rax,           %rax
-    mov $1,             %rdi
-    mov $name,          %rsi
-    mov $100,           %rdx
+    xor %eax,           %eax
+    mov $1,             %edi
+    mov $name,          %esi
+    mov $100,           %edx
     syscall
 
     # same thing here
-    mov $name,          %rdi
-    dec                 %rax
+    mov $name,          %edi
+    dec                 %eax
     movl $0,            (%rdi, %rax)
  
     # open file
-    mov $2,             %rax
-    mov $name,          %rdi
-    xor %rsi,           %rsi
+    mov $2,             %eax
+    mov $name,          %edi
+    xor %esi,           %esi
     syscall
 
     # read file into buffer
-    mov %rax,           %rdi
-    xor %rax,           %rax
-    mov $file,          %rsi
-    mov $255,           %rdx
+    mov %eax,           %edi
+    xor %eax,           %eax
+    mov $file,          %esi
+    mov $255,           %edx
     syscall
     lea -1(%rax),       %r11 # we store the actual file length on r11
 
     # we start using 32 bits registers as we are performing 32 bits operations
     mov $file,          %edi
     mov $input,         %ebp
-    xor %ebx,           %ebx # this indexes are just counters
+    xor %rbx,           %rbx # this indexes are just counters
     xor %rsi,           %rsi
 compare_char:
     cmp %rsi,           %r10 # if we got to the end of input
@@ -90,20 +90,20 @@ reset_counter:
     jmp                 compare_char
 
 found:
-    mov $1,             %rax
-    xor %rdi,           %rdi
-    mov $found_msg,     %rsi
-    mov $31,            %rdx
+    mov $1,             %eax
+    xor %edi,           %edi
+    mov $found_msg,     %esi
+    mov $31,            %edx
     syscall
     jmp                 exit
 not_found:
-    mov $1,             %rax
-    xor %rdi,           %rdi
-    mov $not_found_msg, %rsi
-    mov $39,            %rdx
+    mov $1,             %eax
+    xor %edi,           %edi
+    mov $not_found_msg, %esi
+    mov $39,            %edx
     syscall
 exit:
     # we exit happy :)
-    mov $60,            %rax
-    xor %rdi,           %rdi
+    mov $60,            %eax
+    xor %edi,           %edi
     syscall

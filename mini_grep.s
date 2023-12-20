@@ -25,12 +25,8 @@ _start:
     mov $input,         %rsi
     mov $100,           %rdx
     syscall 
-
-    # remove newline (\n)
-    mov $input,         %rdi
-    dec                 %rax
-    movb $0,            (%rdi, %rax)
-    mov %rax,           %r10 # store the actual input length on r10
+    lea -1(%rax),       %r10 # we store the actual input length on r10
+    # this is a compile hack, essentially we are subtracting 1 from rax
 
     # prompt for the filename
     mov $1,             %rax
@@ -63,9 +59,7 @@ _start:
     mov $file,          %rsi
     mov $255,           %rdx
     syscall
-
-    dec                 %rax
-    mov %rax,           %r11 # store the actual file length on r11
+    lea -1(%rax),       %r11 # we store the actual file length on r11
 
     # we start using 32 bits registers as we are performing 32 bits operations
     mov $file,          %edi

@@ -8,19 +8,19 @@
 .section .text
 _start:
 		mov $2,					%rax
-		mov $filename,	%rdi
+		mov $filename,	        %rdi
 		mov $0,					%rsi
 		syscall
 
 		mov %rax,				%rdi
 		mov $0,					%rax
-		mov $buffer,		%rsi
+		mov $buffer,		    %rsi
 		mov $255,				%rdx
 		syscall
 
 		mov $1,					%rax
 		mov $1,					%rdi
-		mov $buffer,		%rsi
+		mov $buffer,		    %rsi
 		syscall
 
 		mov $60,				%rax

@@ -12,6 +12,12 @@ found_msg:      .string "File contains the search term.\n"
 
 .section .text
 _start:
+    # setup strings for printing
+    mov $found_msg,     %r12
+    mov $31,            %r13
+    mov $not_found_msg, %r14
+    mov $39,            %r15
+
     # prompt for the grep string
     mov $1,             %eax
     xor %edi,           %edi
@@ -68,10 +74,12 @@ _start:
     xor %rsi,           %rsi
 compare_char:
     cmp %rsi,           %r10 # if we got to the end of input
-    je                  found
+    cmove %r12,         %rsi
+    cmove %r13,         %rdx
 
     cmp %rbx,           %r11 # we check if we reached EOF
-    je                  not_found
+    cmove %r14,         %rsi
+    cmove %r15,         %rdx
 
     movb (%edi, %ebx),  %al # we get one byte from the strings (1 char)
     cmpb %al,           (%ebp, %esi) # compare if it is the same
@@ -88,21 +96,12 @@ no_match:
 reset_counter:
     mov $0,             %esi # reset esi to start looking for the first char
     jmp                 compare_char
-
-found:
-    mov $1,             %eax
-    xor %edi,           %edi
-    mov $found_msg,     %esi
-    mov $31,            %edx
-    syscall
-    jmp                 exit
-not_found:
-    mov $1,             %eax
-    xor %edi,           %edi
-    mov $not_found_msg, %esi
-    mov $39,            %edx
-    syscall
 exit:
+    # we print the end message
+    mov $1,             %eax
+    xor %edi,           %edi
+    syscall
+
     # we exit happy :)
     mov $60,            %eax
     xor %edi,           %edi
